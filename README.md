@@ -13,4 +13,7 @@ cloudsnapshot uses the configuration file created by aws cli, e.g.
 
 ## Running
 
-`pipenv run python cloudsnapshot.py`
+`pipenv run python cloudsnapshot.py <command> <--project=PROJECT>`
+
+*command* is list, start, or stop
+*project* is optional
