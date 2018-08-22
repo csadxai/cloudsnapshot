@@ -1,4 +1,5 @@
 import boto3
+from botocore.exceptions import ClientError
 import click
 
 session = boto3.Session(profile_name='cloudsnapshot')
@@ -95,10 +96,19 @@ def create_snapshots(project):
     instances = filter_instances(project)
 
     for i in instances:
+        print("Stopping {0}".format(i.id))
+
         i.stop()
+        i.wait_until_stopped()
+
         for v in i.volumes.all():
             print("Creating snapshots of {0}".format(v.id))
             v.create_snapshot(Description="Created by Clean Air")
+        i.start()
+        i.wait_until_running()
+
+    print("Job's done!")
+
     return
 
 @instances.command('start')
@@ -110,7 +120,11 @@ def start_instances(project):
 
     for i in instances:
         print("Starting {0}...".format(i.id))
-        i.start()
+        try:
+            i.start()
+        except ClientError as e:
+            print("Could not start {0}".format(i.id))
+            continue
     return
 
 
@@ -123,7 +137,11 @@ def stop_instances(project):
 
     for i in instances:
         print("Stopping {0}...".format(i.id))
-        i.stop()
+        try:
+            i.stop()
+        except ClientError as e:
+            print("Could not stop {0}".format(i.id))
+            continue
     return
 
 
